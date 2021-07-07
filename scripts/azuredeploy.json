@@ -1,0 +1,75 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "rgName": {
+            "type": "string"
+        },
+        "rgLocation": {
+            "type": "string"
+        },
+        "acrName": {
+            "type": "string"
+        },
+        "acrLocation": {
+            "type": "string"
+        },
+        "acrSku": {
+            "type": "string"
+        },
+        "acrAdminUserEnabled": {
+            "type": "bool"
+        }         
+    },
+    // Change the baseUri to http://740a8a3bc583.ngrok.io/ while running locally
+    "variables": {
+        "baseURI": "https://raw.githubusercontent.com/subhendu-de/cloud-native/main/scripts/"
+    },
+    "functions": [],
+    "resources": 
+    [
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2020-10-01",
+            "name": "[parameters('rgName')]",
+            "location": "[parameters('rgLocation')]"
+        },
+        {
+            "name": "acrdeployment",
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2020-10-01",
+            "resourceGroup": "[parameters('rgName')]",
+            "properties": 
+            {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('baseURI') ,'azuredeploy-acr.json')]"
+                },
+                "parameters": {
+                    "acrName": {
+                        "value": "[parameters('acrName')]"
+                    },
+                    "acrLocation": {
+                        "value": "[parameters('acrLocation')]"
+                    },
+                    "acrSku": {
+                        "value": "[parameters('acrSku')]"
+                    },
+                    "acrAdminUserEnabled": {
+                        "value": "[parameters('acrAdminUserEnabled')]"
+                    }
+                }                
+            },
+            "dependsOn": 
+            [
+                "[resourceId('Microsoft.Resources/resourceGroups', parameters('rgName'))]"
+            ]
+        }              
+    ],
+    "outputs": {
+        "acrLoginServer": {
+            "type": "string",
+            "value": "[reference('acrdeployment').outputs.acrLoginServer.value]"
+        }
+    }
+}
